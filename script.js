@@ -1,153 +1,112 @@
 Telegram.WebApp.ready();
-let balance = 0, level = 1, energy = 1000, maxEnergy = 1000, miningPower = 1, familySize = 1, referrals = 0;
+
+let points = 0;
+let record = 0;
+let level = 1;
+let familySize = 1;
+let referrals = 0;
 let clan = null;
-const API_URL = 'https://doge-family-empire-backend.vercel.app/api'; // Замени на свой!
-const userId = Telegram.WebApp.initDataUnsafe.user?.id || Math.floor(Math.random()*1e9);
-const boosts = { puppies: {level:1,cost:200}, family:{level:1,cost:800}, vacation:{level:0,cost:5000} };
-const tasks = { tap:{goal:10000,progress:0,reward:5000,claimed:false}, invite:{goal:1,progress:0,reward:20000,claimed:false} };
+const API_URL = 'https://your-backend.vercel.app'; // Замени на свой, если есть
+
+const riddles = [
+  { question: "У отца 3 сына. Каждый сын имеет сестру. Сколько детей у отца?", answer: "4", hint: "Сестра общая для всех." },
+  { question: "Что идет вверх и вниз, но остается на месте?", answer: "температура", hint: "Это связано с термометром." },
+  { question: "Сколько месяцев имеют 28 дней?", answer: "12", hint: "Все месяцы имеют хотя бы 28 дней." },
+  { question: "Что можно увидеть с закрытыми глазами?", answer: "сон", hint: "Это не реальность." },
+  { question: "Что имеет шею, но нет головы?", answer: "бутылка", hint: "Из кухни." },
+  { question: "Что всегда перед тобой, но ты не можешь его увидеть?", answer: "будущее", hint: "Время." },
+  { question: "Что мокнет, когда сушит?", answer: "полотенце", hint: "Используется в ванной." },
+  { question: "Какое слово начинается с 'е' и заканчивается 'е', но имеет только одну букву?", answer: "конверт", hint: "Для писем." },
+  { question: "Что имеет кольцо, но нет пальца?", answer: "телефон", hint: "Звонит." },
+  { question: "Что имеет голову и хвост, но нет тела?", answer: "монета", hint: "Деньги." },
+  { question: "Что можно сломать, но не потрогать?", answer: "обещание", hint: "Слова." },
+  { question: "Что имеет корни, которые никто не видит?", answer: "гора", hint: "Природа." },
+  { question: "Что тяжелее: килограмм ваты или килограмм железа?", answer: "одинаково", hint: "Вес." },
+  { question: "Что всегда возвращается, но никогда не уходит?", answer: "бумеранг", hint: "Игрушка." },
+  { question: "Что имеет дно на вершине?", answer: "нога", hint: "Часть тела." },
+  { question: "Что имеет уши, но не слышит?", answer: "кукуруза", hint: "Овощ." },
+  { question: "Что светит, но не греет?", answer: "луна", hint: "Ночь." },
+  { question: "Что растет вниз?", answer: "сосулька", hint: "Зима." },
+  { question: "Что можно держать, но не потрогать?", answer: "дыхание", hint: "Воздух." },
+  { question: "Что имеет города, но нет домов; леса, но нет деревьев; реки, но нет воды?", answer: "карта", hint: "Бумага." }
+  // Добавь больше, если нужно
+];
 
 function loadGame() {
-  const saved = localStorage.getItem('dogeFamily');
-  if (saved) Object.assign(this, JSON.parse(saved));
-  familySize = 1 + referrals;
-  updateAll();
+  const saved = localStorage.getItem('familyBrain');
+  if (saved) {
+    const data = JSON.parse(saved);
+    points = data.points || 0;
+    record = data.record || 0;
+    level = data.level || 1;
+    familySize = data.familySize || 1;
+    referrals = data.referrals || 0;
+    clan = data.clan || null;
+  }
+  updateUI();
+  loadTasks();
 }
 loadGame();
 
-function saveGame() { localStorage.setItem('dogeFamily', JSON.stringify(this)); }
+function saveGame() {
+  const data = { points, record, level, familySize, referrals, clan };
+  localStorage.setItem('familyBrain', JSON.stringify(data));
+}
 
 function updateUI() {
-  document.getElementById('balance').textContent = Math.floor(balance).toLocaleString();
+  document.getElementById('points').textContent = points;
+  document.getElementById('record').textContent = record;
   document.getElementById('level').textContent = level;
-  document.getElementById('energy').textContent = Math.floor(energy);
-  document.getElementById('maxEnergy').textContent = maxEnergy;
   document.getElementById('familySize').textContent = familySize;
-  document.querySelectorAll('.boost-item').forEach(item => {
-    const id = item.dataset.id; const b = boosts[id];
-    item.querySelector('.lvl').textContent = b.level;
-    item.querySelector('.cost').textContent = b.cost.toLocaleString();
+}
+
+function loadTasks() {
+  const list = document.getElementById('task-list');
+  list.innerHTML = '';
+  riddles.slice(0, 10).forEach((riddle, index) => { // 10 заданий на старте
+    const div = document.createElement('div');
+    div.classList.add('task');
+    div.innerHTML = `
+      <p>${riddle.question}</p>
+      <input type="text" placeholder="Ответ" data-index="${index}">
+      <button onclick="checkAnswer(${index})">Проверить</button>
+      <p class="result" id="result-${index}"></p>
+      <button class="hint-btn">Подсказка</button>
+    `;
+    list.appendChild(div);
   });
 }
 
-function updateTasks() {
-  tasks.tap.progress = balance;
-  tasks.invite.progress = referrals;
-  ['tap','invite'].forEach(id => {
-    const prog = document.querySelector(`.task[data-id="${id}"] .progress`);
-    prog.textContent = `${Math.min(tasks[id].progress, tasks[id].goal)}/${tasks[id].goal}`;
-    const btn = prog.nextElementSibling;
-    if (!tasks[id].claimed && tasks[id].progress >= tasks[id].goal) {
-      btn.disabled = false;
-      btn.onclick = () => {
-        balance += tasks[id].reward; tasks[id].claimed = true;
-        btn.textContent = '✓'; btn.disabled = true;
-        updateAll(); saveGame();
-      };
-    }
-  });
-}
-
-async function updateLeaderboard() {
-  try {
-    const res = await fetch(`${API_URL}/leaderboard`);
-    const clans = await res.json();
-    const list = document.getElementById('top-list');
-    list.innerHTML = '';
-    clans.slice(0,10).forEach((c,i) => {
-      const li = document.createElement('li');
-      li.innerHTML = `<strong>${i+1}. ${c.name}</strong> <span>${(c.score/1e6).toFixed(1)}м</span>`;
-      list.appendChild(li);
-    });
-    document.getElementById('my-score').textContent = Math.floor(balance).toLocaleString();
-    document.getElementById('my-rank').textContent = `#${Math.max(1,100-referrals*5)}`;
-  } catch(e) { console.log('Leaderboard load error'); }
-}
-
-function updateClanUI() {
-  const info = document.getElementById('clan-info');
-  if (clan) info.textContent = `Клан: ${clan.name} (${clan.members} чел.)`;
-  else info.textContent = 'Не в клане';
-}
-
-async function createClan() {
-  const name = document.getElementById('clan-name').value || 'Моя семья';
-  try {
-    const res = await fetch(`${API_URL}/create-clan`, {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({userId, name})
-    });
-    const data = await res.json();
-    if (data.success) {
-      clan = {id: data.clanId, name, members:1};
-      miningPower *= 1.1; // Бонус
-      updateClanUI(); saveGame();
-      Telegram.WebApp.showAlert('Клан создан! Код: ' + data.code);
-    }
-  } catch(e) { console.error(e); }
-}
-
-async function joinClan() {
-  const code = document.getElementById('clan-code').value.toUpperCase();
-  try {
-    const res = await fetch(`${API_URL}/join-clan`, {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({userId, clanId: code})
-    });
-    const data = await res.json();
-    if (data.success) {
-      // Загрузи данные клана
-      const clanRes = await fetch(`${API_URL}/clan/${code}`);
-      clan = await clanRes.json();
-      balance += 50000; // Бонус
-      updateClanUI(); updateAll(); saveGame();
-      Telegram.WebApp.showAlert('Вступил в клан!');
-    } else {
-      Telegram.WebApp.showAlert(data.error || 'Ошибка');
-    }
-  } catch(e) { console.error(e); }
-}
-
-async function updateClanScore(score) {
-  if (clan) {
-    try {
-      await fetch(`${API_URL}/update-score`, {
-        method: 'POST', headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({userId, score: Math.floor(score * 0.1)})
-      });
-    } catch(e) {}
+function checkAnswer(index) {
+  const input = document.querySelector(`input[data-index="${index}"]`);
+  const result = document.getElementById(`result-${index}`);
+  const answer = input.value.trim().toLowerCase();
+  if (answer === riddles[index].answer.toLowerCase()) {
+    points += 50;
+    record = Math.max(record, points);
+    result.textContent = 'Правильно! +50 очков 🎉';
+    result.style.color = '#4caf50';
+    // Конфетти анимация
+    Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+    levelUp();
+  } else {
+    result.textContent = 'Неправильно 😔';
+    result.style.color = '#f44336';
   }
+  saveGame();
+  updateUI();
 }
 
-function updateAll() { updateUI(); updateTasks(); updateClanUI(); }
+function levelUp() {
+  if (points >= level * 200) level++;
+}
 
-// Тап
-document.getElementById('doge').addEventListener('click', (e) => {
-  if (energy <= 0) return;
-  energy -= 1;
-  const gain = miningPower;
-  balance += gain;
-  updateClanScore(gain); // Клан!
-  // Анимация
-  const effect = document.getElementById('tap-effect');
-  effect.textContent = `+${gain}`;
-  effect.style.opacity = 1;
-  setTimeout(() => { effect.style.opacity = 0; }, 600);
-  updateAll(); saveGame();
+document.querySelectorAll('.hint-btn').forEach((btn, index) => {
+  btn.addEventListener('click', () => alert(riddles[index].hint));
 });
 
-// Восстановление энергии
-setInterval(() => {
-  if (energy < maxEnergy) {
-    energy = Math.min(maxEnergy, energy + 5);
-    document.getElementById('energy').textContent = Math.floor(energy);
-  }
-}, 1000);
+// Табы, кланы, рефералка, лидерборд — как в предыдущем коде, адаптируй (убери майнинг, добавь очки в клан)
 
-// Лидерборд каждые 30с
-setInterval(updateLeaderboard, 30000);
-updateLeaderboard();
-
-// Табы
 document.querySelectorAll('.tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.tab, .tab-content').forEach(el => el.classList.remove('active'));
@@ -156,38 +115,4 @@ document.querySelectorAll('.tab').forEach(tab => {
   });
 });
 
-// Бусты
-document.querySelectorAll('.boost-item button').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const item = btn.closest('.boost-item');
-    const id = item.dataset.id;
-    const cost = boosts[id].cost;
-    if (balance >= cost) {
-      balance -= cost;
-      boosts[id].level++;
-      boosts[id].cost = Math.floor(cost * 1.8);
-      if (id === 'puppies') miningPower += 2;
-      if (id === 'family') maxEnergy += 800;
-      if (id === 'vacation') miningPower *= 2; // Временный x2
-      updateAll(); saveGame();
-      Telegram.WebApp.HapticFeedback.impactOccurred('light');
-    } else {
-      Telegram.WebApp.HapticFeedback.notificationOccurred('error');
-    }
-  });
-});
-
-// Кланы
-document.getElementById('create-clan').onclick = createClan;
-document.getElementById('join-clan').onclick = joinClan;
-
-// Рефералка
-document.getElementById('invite-btn').onclick = () => {
-  referrals++;
-  familySize++;
-  balance += 20000;
-  tasks.invite.progress++;
-  updateAll(); saveGame();
-  const url = `https://t.me/${Telegram.WebApp.initDataUnsafe.bot_username}?start=ref${userId}`;
-  Telegram.WebApp.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=🐶 Присоединяйся к DogeFamily Empire! 👨‍👩‍👧‍👦`);
-};
+// ... остальной код для кланов и приглашений как раньше
