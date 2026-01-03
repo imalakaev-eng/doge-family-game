@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>DogeFamily Empire</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🐶👨‍👩‍👧‍👦 DogeFamily Empire</h1>
+      <div class="balance" id="balance">0</div>
+      <div class="info">
+        <span>Семья: <span id="familySize">1</span></span>
+        <span>Уровень: <span id="level">1</span></span>
+        <span>Энергия: <span id="energy">1000</span>/<span id="maxEnergy">1000</span></span>
+      </div>
+    </header>
+
+    <div class="dog-container">
+      <img src="https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=800" alt="Doge Family" id="doge">
+      <div id="tap-effect"></div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="boost">Бусты</button>
+      <button class="tab" data-tab="tasks">Задания</button>
+      <button class="tab" data-tab="leaderboard">🏆 Рейтинг</button>
+      <button class="tab" data-tab="clan">Клан</button>
+      <button class="tab" data-tab="friends">Пригласить</button>
+    </div>
+
+    <div id="boost" class="tab-content active">
+      <div class="boost-item" data-id="puppies">
+        <span>🍼 Щенки (+2 майнинг)</span>
+        <span>Ур. <span class="lvl">1</span></span>
+        <button>За <span class="cost">200</span></button>
+      </div>
+      <div class="boost-item" data-id="family">
+        <span>👨‍👩‍👧‍👦 Большая семья (+800 энергии)</span>
+        <span>Ур. <span class="lvl">1</span></span>
+        <button>За <span class="cost">800</span></button>
+      </div>
+      <div class="boost-item" data-id="vacation">
+        <span>🏖 Отпуск (x2 на час)</span>
+        <span>Ур. <span class="lvl">0</span></span>
+        <button>За <span class="cost">5000</span></button>
+      </div>
+    </div>
+
+    <div id="tasks" class="tab-content">
+      <h3>Ежедневные задания</h3>
+      <div class="task" data-id="tap">
+        <span>Намайни 10k коинов</span>
+        <span class="progress">0/10000</span>
+        <button class="claim" disabled>Забрать 5000</button>
+      </div>
+      <div class="task" data-id="invite">
+        <span>Пригласи 1 друга</span>
+        <span class="progress">0/1</span>
+        <button class="claim" disabled>Забрать 20k</button>
+      </div>
+    </div>
+
+    <div id="leaderboard" class="tab-content">
+      <h3>🏆 Топ-10 семей</h3>
+      <ol id="top-list"></ol>
+      <p>Твоя: <span id="my-rank">#42</span> — <span id="my-score">0</span></p>
+    </div>
+
+    <div id="clan" class="tab-content">
+      <h3>🤝 Клан</h3>
+      <div id="clan-info">Не в клане</div>
+      <input type="text" id="clan-name" placeholder="Название клана">
+      <button id="create-clan">Создать</button>
+      <input type="text" id="clan-code" placeholder="Код клана">
+      <button id="join-clan">Вступить</button>
+    </div>
+
+    <div id="friends" class="tab-content">
+      <h3>Пригласи в семью!</h3>
+      <p>+20k коинов + рейтинг ↑</p>
+      <button id="invite-btn">Поделиться</button>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>

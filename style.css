@@ -1,0 +1,19 @@
+body { margin: 0; padding: 0; font-family: Arial, sans-serif; background: linear-gradient(135deg, #ffecb3, #ffb74d); color: white; min-height: 100vh; touch-action: manipulation; }
+.container { max-width: 500px; margin: 0 auto; padding: 20px; text-align: center; }
+header h1 { font-size: 28px; margin: 10px 0; }
+.balance { font-size: 36px; font-weight: bold; margin: 15px 0; }
+.info { font-size: 18px; opacity: 0.9; display: flex; justify-content: space-around; }
+.dog-container { position: relative; margin: 40px 0; }
+#doge { width: 280px; height: auto; cursor: pointer; border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.3); animation: float 6s ease-in-out infinite; }
+@keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+#tap-effect { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 40px; font-weight: bold; opacity: 0; pointer-events: none; }
+.tabs { display: flex; margin: 20px 0; }
+.tab { flex: 1; padding: 12px; background: rgba(0,0,0,0.2); border: none; color: white; font-size: 16px; }
+.tab.active { background: rgba(255,255,255,0.3); }
+.tab-content { display: none; padding: 20px; background: rgba(0,0,0,0.1); border-radius: 15px; }
+.tab-content.active { display: block; }
+.boost-item, .task { background: rgba(255,255,255,0.2); padding: 15px; margin: 10px 0; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; }
+button { background: #4caf50; color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+input { padding: 10px; border-radius: 10px; border: none; margin: 5px; width: 200px; }
+#invite-btn { width: 100%; padding: 15px; font-size: 18px; background: #ff5722; }
+ol { text-align: left; }
